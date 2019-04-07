@@ -5,10 +5,117 @@
     xmlns:local="using:WorldEdit"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:Microsoft.Toolkit.Uwp.UI.Converters"
+    xmlns:controls="using:Microsoft.Toolkit.Uwp.UI.Controls"
+    xmlns:Windows10version1809="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 7)"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" >
+ 
+   
+     
 
-    <Grid>
+    <Grid Margin="20,0,20,20" HorizontalAlignment="Stretch">
+     
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <Grid.Resources>
+            <Style TargetType="AppBarButton">
+                <Setter Property="IsCompact" Value="True"/>
+            </Style>
 
+        </Grid.Resources>
+        <MenuBar>
+            <MenuBarItem Title="Файл">
+
+                <MenuFlyoutItem controls:Menu.InputGestureText="Ctrl+O"
+                  Click="OpenButton_Click"
+                        Text="Открыть..." IsTapEnabled="True"/>
+                <MenuFlyoutItem controls:Menu.InputGestureText="Ctrl+S"
+                   Click="MenuFlyoutItem_Click"
+                        CommandParameter="File Saved"
+                        Icon="Save"
+                        Text="Сохранить" IsTapEnabled="True">
+                </MenuFlyoutItem>
+                <MenuFlyoutItem controls:Menu.InputGestureText="Ctrl+Shift+S"
+                      
+                        CommandParameter="File(s) Saved"
+                        Icon="SaveLocal"
+                        Text="Сохранить как" Click="SaveButton_Click"  IsTapEnabled="True"/>
+                <MenuFlyoutSeparator />
+                
+                <MenuFlyoutItem Text="Выход" Click="MenuFlyoutItem_Click_1" IsTapEnabled="True"/>
+            </MenuBarItem>
+
+            <MenuBarItem Title="Правка">
+                <MenuFlyoutItem Text="Undo"/>
+                <MenuFlyoutItem controls:Menu.InputGestureText="Ctrl+X"
+                     
+                        CommandParameter="Cut"
+                        Text="Cut"
+                        Icon="Cut" />
+                <MenuFlyoutItem controls:Menu.InputGestureText="Ctrl+C"
+                    
+                        CommandParameter="Copied"
+                        Text="Copy"
+                        Icon="Copy" />
+                <MenuFlyoutItem controls:Menu.InputGestureText="Ctrl+V"
+                       
+                        CommandParameter="Pasted"
+                        Text="Paste"
+                        Icon="Paste" />
+            </MenuBarItem>
+
+            <MenuBarItem Title="Помощь">
+                <MenuFlyoutItem Text="О приложение"/>
+            </MenuBarItem>
+        </MenuBar>
+        <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <AppBarButton x:Name="openFileButton" Icon="OpenFile"
+                  Click="OpenButton_Click" ToolTipService.ToolTip="Open file" VerticalAlignment="Center"/>
+            <AppBarButton Icon="Save" Click="SaveButton_Click"
+                  ToolTipService.ToolTip="Save file"
+                  RelativePanel.RightOf="openFileButton" Margin="8,0,0,0" VerticalAlignment="Center"/>
+            <AppBarSeparator VerticalAlignment="Center"/>
+            <AppBarButton Icon="Bold" Click="BoldButton_Click" ToolTipService.ToolTip="Bold"
+                  RelativePanel.LeftOf="italicButton" Margin="0,0,8,0" VerticalAlignment="Center"/>
+            <AppBarButton x:Name="italicButton" Icon="Italic" Click="ItalicButton_Click"
+                  ToolTipService.ToolTip="Italic" RelativePanel.LeftOf="underlineButton" Margin="0,0,8,0" VerticalAlignment="Center"/>
+            <AppBarButton x:Name="underlineButton" Icon="Underline" Click="UnderlineButton_Click"
+                  ToolTipService.ToolTip="Underline" RelativePanel.AlignRightWithPanel="True" VerticalAlignment="Center"/>
+
+        </StackPanel>
+
+
+
+        <RichEditBox x:Name="editor" Grid.Row="3"
+               InputScope="Default"
+                 GotFocus="Editor_GotFocus" />
+
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="60"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+                
+         
+            <AppBarSeparator VerticalAlignment="Center"/>
+            <TextBlock x:Name="findBoxLabel" Text="Поиск:" VerticalAlignment="Center"/>
+                <TextBox x:Name="findBox" Width="150" VerticalAlignment="Center" PlaceholderText="Текст для поиска" Margin="10,0,0,0"
+                TextChanged="{x:Bind FindBoxHighlightMatches}" 
+                GotFocus="{x:Bind FindBoxHighlightMatches}" 
+                LostFocus="{x:Bind FindBoxRemoveHighlights}"/>
+            
+              
+            </StackPanel>
+            
+        </Grid>
     </Grid>
 </Page>
