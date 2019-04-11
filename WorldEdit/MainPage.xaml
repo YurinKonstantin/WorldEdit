@@ -14,7 +14,7 @@
    
      
 
-    <Grid Margin="20,0,20,20" HorizontalAlignment="Stretch">
+    <Grid HorizontalAlignment="Stretch">
      
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -76,25 +76,26 @@
         </MenuBar>
         <StackPanel Grid.Row="1" Orientation="Horizontal">
             <AppBarButton x:Name="openFileButton" Icon="OpenFile"
-                  Click="OpenButton_Click" ToolTipService.ToolTip="Open file" VerticalAlignment="Center"/>
+                  Click="OpenButton_Click" ToolTipService.ToolTip="Open file" />
             <AppBarButton Icon="Save" Click="SaveButton_Click"
                   ToolTipService.ToolTip="Save file"
-                  RelativePanel.RightOf="openFileButton" Margin="8,0,0,0" VerticalAlignment="Center"/>
-            <AppBarSeparator VerticalAlignment="Center"/>
+                   Margin="8,0,0,0" />
+            <AppBarSeparator />
             <AppBarButton Icon="Bold" Click="BoldButton_Click" ToolTipService.ToolTip="Bold"
-                  RelativePanel.LeftOf="italicButton" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                  Margin="0,0,8,0" />
             <AppBarButton x:Name="italicButton" Icon="Italic" Click="ItalicButton_Click"
-                  ToolTipService.ToolTip="Italic" RelativePanel.LeftOf="underlineButton" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                  ToolTipService.ToolTip="Italic"  Margin="0,0,8,0" />
             <AppBarButton x:Name="underlineButton" Icon="Underline" Click="UnderlineButton_Click"
-                  ToolTipService.ToolTip="Underline" RelativePanel.AlignRightWithPanel="True" VerticalAlignment="Center"/>
+                  ToolTipService.ToolTip="Underline"/>
 
         </StackPanel>
 
 
 
-        <RichEditBox x:Name="editor" Grid.Row="3"
-               InputScope="Default"
-                 GotFocus="Editor_GotFocus" />
+        <RichEditBox x:Name="editor"  Grid.Row="3" Margin="4,0,4,0"
+               InputScope="Default" Background="White"
+                 GotFocus="Editor_GotFocus" BorderThickness="1"/>
+ 
 
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
@@ -108,7 +109,7 @@
          
             <AppBarSeparator VerticalAlignment="Center"/>
             <TextBlock x:Name="findBoxLabel" Text="Поиск:" VerticalAlignment="Center"/>
-                <TextBox x:Name="findBox" Width="150" VerticalAlignment="Center" PlaceholderText="Текст для поиска" Margin="10,0,0,0"
+                <TextBox x:Name="findBox" Width="150" VerticalAlignment="Center" PlaceholderText="Текст для поиска" Margin="4,0,0,0"
                 TextChanged="{x:Bind FindBoxHighlightMatches}" 
                 GotFocus="{x:Bind FindBoxHighlightMatches}" 
                 LostFocus="{x:Bind FindBoxRemoveHighlights}"/>

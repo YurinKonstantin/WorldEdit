@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.Storage.Provider;
+using Windows.Storage.Streams;
 using Windows.UI;
+using Windows.UI.Popups;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -31,6 +34,13 @@ namespace WorldEdit
             this.InitializeComponent();
         }
         VMV vMV = new VMV();
+        public async void ttt(IRandomAccessStream randAccStream1)
+        {
+           await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () => {
+                editor.TextDocument.LoadFromStream(TextSetOptions.CheckTextLimit, randAccStream1);
+            });
+            
+        }
         private async void OpenButton_Click(object sender, RoutedEventArgs e)
         {
             // Open a text file.
@@ -41,31 +51,65 @@ namespace WorldEdit
             open.FileTypeFilter.Add(".rtf");
             open.FileTypeFilter.Add(".txt");
             open.FileTypeFilter.Add(".dat");
-            open.FileTypeFilter.Add(".doc");
+            //open.FileTypeFilter.Add(".doc");
 
             Windows.Storage.StorageFile file = await open.PickSingleFileAsync();
 
             if (file != null)
             {
                 vMV.File = file;
-             
+           
                 try
                 {
-                    using (Windows.Storage.Streams.IRandomAccessStream randAccStream =
-                await file.OpenAsync(Windows.Storage.FileAccessMode.Read))
+                    editor.Document.SetText(TextSetOptions.None, string.Empty);
+                    if (file.FileType == ".rtf" || file.FileType == ".dat")
                     {
-                        // Load the file into the Document property of the RichEditBox.
-                        editor.Document.LoadFromStream(Windows.UI.Text.TextSetOptions.FormatRtf, randAccStream);
+                        
+                       // using (Windows.Storage.Streams.IRandomAccessStream randAccStream =
+                        // await file.OpenAsync(Windows.Storage.FileAccessMode.Read))
+                         //  {
+                            Windows.Storage.Streams.IInputStream windowsRuntimeStream =
+    await file.OpenAsync(Windows.Storage.FileAccessMode.Read);
+                            // Load the file into the Document property of the RichEditBox.
+                           // Stream managedStream = windowsRuntimeStream.AsStreamForRead(bufferSize: 100920);
+                    
+                  
+                  
+
+                        editor.Document.LoadFromStream(Windows.UI.Text.TextSetOptions.FormatRtf, windowsRuntimeStream.AsStreamForRead(bufferSize: 100920).AsRandomAccessStream());
+                  
+
+                        
+                        //  }
                     }
+                    else
+                    {
+                     
+                   
+                        // editor.Document.BatchDisplayUpdates();
+                        editor.Document.SetText(Windows.UI.Text.TextSetOptions.UnicodeBidi, await FileIO.ReadTextAsync(file));
+              
+                        // editor.Document.ApplyDisplayUpdates();
+                        /*  var buffer = await Windows.Storage.FileIO.ReadBufferAsync(file);
+                          using (var dataReader = Windows.Storage.Streams.DataReader.FromBuffer(buffer))
+                          {
+                              MessageDialog messageDialog = new MessageDialog("hhh");
+                             await messageDialog.ShowAsync();
+                              //string text = dataReader.ReadString(buffer.Length);
+                              editor.Document.SetText(Windows.UI.Text.TextSetOptions.None, dataReader.ReadString(buffer.Length));
+                          }
+                          */
+                    }
+                   
 
                 }
                 catch (Exception)
                 {
                     ContentDialog errorDialog = new ContentDialog()
                     {
-                        Title = "File open error",
+                        Title = "Ошибка открытия файла",
                         Content = "Sorry, I couldn't open the file.",
-                        PrimaryButtonText = "Ok"
+                        PrimaryButtonText = "Okей"
                     };
 
                     await errorDialog.ShowAsync();
@@ -80,20 +124,44 @@ namespace WorldEdit
 
             // Dropdown of file types the user can save the file as
             savePicker.FileTypeChoices.Add("Rich Text", new List<string>() { ".rtf" });
-            savePicker.FileTypeChoices.Add("TXT", new List<string>() { ".txt" });
+            savePicker.FileTypeChoices.Add("Текстовый документ", new List<string>() { ".txt" });
+            savePicker.FileTypeChoices.Add("DAT", new List<string>() { ".dat" });
             // Default file name if the user does not type one in or select a file to replace
-            savePicker.SuggestedFileName = "New Document";
+            if (vMV.File != null)
+            {
+
+
+                savePicker.SuggestedFileName = vMV.File.DisplayName;
+            }
+            else
+            {
+                savePicker.SuggestedFileName = "NewDoc";
+            }
 
             Windows.Storage.StorageFile file = await savePicker.PickSaveFileAsync();
             if (file != null)
             {
-                CachedFileManager.DeferUpdates(file);
-                // write to file
-                using (Windows.Storage.Streams.IRandomAccessStream randAccStream =
-                    await file.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite))
+                 CachedFileManager.DeferUpdates(file);
+                if(file.FileType==".rtf"|| file.FileType == ".dat")
                 {
-                    editor.Document.SaveToStream(Windows.UI.Text.TextGetOptions.FormatRtf, randAccStream);
+                    using (Windows.Storage.Streams.IRandomAccessStream randAccStream =
+                 await file.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite))
+                    {
+                        editor.Document.SaveToStream(Windows.UI.Text.TextGetOptions.FormatRtf, randAccStream);
+
+                    }
+
                 }
+                // write to file
+             else
+                {
+                    
+                        editor.Document.GetText(TextGetOptions.None, out string h1);
+
+                        await Windows.Storage.FileIO.WriteTextAsync(file, h1);
+                    
+                }
+             
 
                 // Let Windows know that we're finished changing the file so the 
                 // other app can update the remote version of the file.
@@ -183,22 +251,45 @@ namespace WorldEdit
 
         private async void MenuFlyoutItem_Click(object sender, RoutedEventArgs e)
         {
-            CachedFileManager.DeferUpdates(vMV.File);
-            // write to file
-            using (Windows.Storage.Streams.IRandomAccessStream randAccStream =
-                await vMV.File.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite))
+            if (vMV.File != null)
             {
-                editor.Document.SaveToStream(Windows.UI.Text.TextGetOptions.FormatRtf, randAccStream);
-            }
 
-            // Let Windows know that we're finished changing the file so the 
-            // other app can update the remote version of the file.
-            FileUpdateStatus status = await CachedFileManager.CompleteUpdatesAsync(vMV.File);
-            if (status != FileUpdateStatus.Complete)
+
+                CachedFileManager.DeferUpdates(vMV.File);
+                if (vMV.File.FileType == ".rtf")
+                {
+                    using (Windows.Storage.Streams.IRandomAccessStream randAccStream =
+                 await vMV.File.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite))
+                    {
+                        editor.Document.SaveToStream(Windows.UI.Text.TextGetOptions.FormatRtf, randAccStream);
+
+                    }
+
+                }
+                // write to file
+                else
+                {
+
+                    editor.Document.GetText(TextGetOptions.None, out string h1);
+
+                    await Windows.Storage.FileIO.WriteTextAsync(vMV.File, h1);
+
+                }
+
+
+                // Let Windows know that we're finished changing the file so the 
+                // other app can update the remote version of the file.
+                FileUpdateStatus status = await CachedFileManager.CompleteUpdatesAsync(vMV.File);
+                if (status != FileUpdateStatus.Complete)
+                {
+                    Windows.UI.Popups.MessageDialog errorBox =
+                        new Windows.UI.Popups.MessageDialog("File " + vMV.File.Name + " couldn't be saved.");
+                    await errorBox.ShowAsync();
+                }
+            }
+            else
             {
-                Windows.UI.Popups.MessageDialog errorBox =
-                    new Windows.UI.Popups.MessageDialog("File " + vMV.File.Name + " couldn't be saved.");
-                await errorBox.ShowAsync();
+                SaveButton_Click(null, null);
             }
 
         }
